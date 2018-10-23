@@ -1,15 +1,13 @@
-import boto3
-
-def _get_client():
-    return boto3.client('elb')
+def _get_client(session):
+    return session.client('elb')
 
 
 def _get_elb_name(project_name):
     return "elb-{}".format(str(project_name))
 
 
-def provision_and_configure_elb(configuration):
-    client = _get_client()
+def provision_and_configure_elb(configuration, session):
+    client = _get_client(session)
     elb_response = None
     project_name = configuration.get("project_name")
     elb_name = _get_elb_name(project_name)

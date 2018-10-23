@@ -1,17 +1,16 @@
-import boto3
 from botocore.exceptions import ClientError
 
 
-def _get_client():
-    return boto3.client('ec2')
+def _get_client(session):
+    return session.client('ec2')
 
 
 def _get_sg_name(name):
     return "{}".format(str(name))
 
 
-def provision_security_groups(configuration):
-    client = _get_client()
+def provision_security_groups(configuration, session):
+    client = _get_client(session)
     project_name = configuration.get("project_name")
     vpc_id = configuration.get("vpc_id")
 
