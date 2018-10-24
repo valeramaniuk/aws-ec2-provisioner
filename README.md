@@ -45,7 +45,7 @@ If you omit any of the options you will be prompted interactively.
 #### TODO:
 - [ ] Load based autoscaling
 - [ ] Additional region
-- [ ] Choose subnet-id interactively after specifying 
+- [ ] Choose subnet-id interactively after specifying VPC-id
 - [ ] Proper logging instead of print statements
 - [ ] Tests
 - [ ] Idempotency
