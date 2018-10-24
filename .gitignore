@@ -1,12 +1,11 @@
-aws_provisioner/
 venv_*
 __pycache__/*
+master
+build/
 .idea/
-# Compiled python modules.
+.tox/
 *.pyc
-
-# Setuptools distribution folder.
 /dist/
 
 # Python egg metadata, regenerated from source files by setuptools.
-/*.egg-info
+src/aws_ec2_provisioner.egg-info/

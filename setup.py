@@ -1,21 +1,29 @@
-import setuptools
+from setuptools import setup, find_packages
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-setuptools.setup(
-    name="aws_ec2_provisioner_pkg",
-    version="0.0.1",
+
+
+setup(
+    name='aws_ec2_provisioner',
+    version='0.0.4',
     author="Valera Maniuk",
     author_email='valeramaniuk@protonmail.com',
     description="POC boto3 resource provisioner",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url='https://github.com/valeramaniuk/aws-ec2-provisioner',
-    packages=setuptools.find_packages(),
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
+    include_package_data=True,
+    install_requires=[
+        'click',
+        'boto3>=1.4.5',
     ],
+    entry_points='''
+        [console_scripts]
+        aws_ec2_provisioner=aws_ec2_provisioner.main:main
+    ''',
+    zip_safe=False
 )
