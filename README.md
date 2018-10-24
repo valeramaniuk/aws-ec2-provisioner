@@ -1,8 +1,8 @@
 
 CLI tool to create a simple web app.
  
-To simplify the design all elements are being added to the single
-subnet, and this subnet is required to be a **public** one. Because of the architecture doesn't include a NAT gateway all the provisioned instances **will be assigned a public IP** address, so they can download the neccessary packages.
+To simplify the design all the infrastructure are being created in the single
+subnet, and this subnet is required to be a **public** one. Because of the architecture doesn't include a NAT gateway all the provisioned instances **will be assigned a public IP** address, so they can download the necessary packages.
 #### Installation
     pip install aws_ec2_provisioner
 or
@@ -11,7 +11,7 @@ or
     cd aws-ec2-provisioner
     pip install .
 
-####Usage
+#### Usage
 run `aws_ec2_provisioner` with the following options:
 
     --vpc-id <VPC where you want to deploy the app>
@@ -23,11 +23,11 @@ run `aws_ec2_provisioner` with the following options:
     --instance-type <INT. Choose from a predefined oprions>
 
 If you omit any of the options you will be prompted interactively.
-#####Available instace types:
+##### Available instace types:
     1. t2.micro
     2. t2.meduim
 
-####Infrastructure to be created:
+#### Infrastructure to be created:
 - ELB
     - Listener **80**
     - Instance port **80**
@@ -42,7 +42,7 @@ If you omit any of the options you will be prompted interactively.
         - ingress only from `ELB security group`
         - **no SSH access** because the APP servers are in the public subnet (architecture limitation)
     
-####TODO:
+#### TODO:
 - [ ] Load based autoscaling
 - [ ] Additional region
 - [ ] Choose subnet-id interactively after specifying 
