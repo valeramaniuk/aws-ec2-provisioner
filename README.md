@@ -20,7 +20,7 @@ run `aws_ec2_provisioner` with the following options:
     --aws-profile <The name of access key/secret key pair (~/.aws/credentials)>
     --min-asg-size <Minimum size of the autoscaling group>
     --max-asg-size <Maximum size of the autoscaling group>
-    --instance-type <INT. Choose from a predefined oprions>
+    --instance-type <INT. Choose from a predefined list>
 
 If you omit any of the options you will be prompted interactively.
 ##### Available instace types:
