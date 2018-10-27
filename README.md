@@ -4,7 +4,7 @@ CLI tool to create a simple web app.
 To simplify the design all the infrastructure are being created in the single
 subnet, and this subnet is required to be a **public** one. Because of the architecture doesn't include a NAT gateway all the provisioned instances **will be assigned a public IP** address, so they can download the necessary packages.
 #### Installation
-    pip install aws_ec2_provisioner
+    pip install aws-ec2-provisioner
 or
 
     git clone git@github.com:valeramaniuk/aws-ec2-provisioner.git

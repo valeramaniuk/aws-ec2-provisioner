@@ -73,8 +73,6 @@ def main(region, max_asg_size, min_asg_size, instance_type, project_name, subnet
        "subnets": subnet_id,
     }
 
-    pp.pprint(configuration)
-
     sg_provisioning_result = provision_security_groups(configuration, session)
     configuration["security_groups"] = sg_provisioning_result
 

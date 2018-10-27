@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='aws_ec2_provisioner',
-    version='0.0.5',
+    version='0.0.6',
     author="Valera Maniuk",
     author_email='valeramaniuk@protonmail.com',
     description="POC boto3 resource provisioner",
@@ -19,7 +19,8 @@ setup(
     include_package_data=True,
     install_requires=[
         'click',
-        'boto3>=1.4.5',
+        'boto3',
+        'pprint'
     ],
     entry_points='''
         [console_scripts]
