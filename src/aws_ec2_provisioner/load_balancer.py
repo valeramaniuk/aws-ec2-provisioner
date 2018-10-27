@@ -13,7 +13,6 @@ def provision_and_configure_elb(configuration, session):
     elb_name = _get_elb_name(project_name)
     try:
         elb_response = _create_elb(configuration, elb_name, client)
-        print(elb_response)
     except Exception as e:
         print(str(e))
 
@@ -51,7 +50,7 @@ def _create_elb(configuration, elb_name, client):
         ]
     )
     print("ELB Created OK")
-    return response
+    return response or {}
 
 
 def _configure_health_check(elb_name, client):

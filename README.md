@@ -12,6 +12,7 @@ or
     pip install .
 
 #### Usage
+
 run `aws_ec2_provisioner` with the following options:
 
     --vpc-id <VPC where you want to deploy the app>
@@ -23,6 +24,8 @@ run `aws_ec2_provisioner` with the following options:
     --instance-type <INT. Choose from a predefined list>
 
 If you omit any of the options you will be prompted interactively.
+
+`aws_ec2_provisioner --help` for all available options
 ##### Available instace types:
     1. t2.micro
     2. t2.meduim
