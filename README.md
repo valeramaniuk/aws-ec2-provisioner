@@ -45,7 +45,9 @@ If you omit any of the options you will be prompted interactively.
 #### TODO:
 - [ ] Load based autoscaling
 - [ ] Additional region
-- [ ] Choose subnet-id interactively after specifying 
+- [x] Choose aws_profile interactively based on ~/.aws/credentials
+- [x] Choose vpc-id interactively after specifying the aws-profile and region
+- [x] Choose subnet-id interactively after specifying the subnet
 - [ ] Proper logging instead of print statements
 - [ ] Tests
 - [ ] Idempotency
