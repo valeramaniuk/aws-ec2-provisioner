@@ -1,9 +1,14 @@
+import pprint
+
 import click
 import boto3
+from aws_ec2_provisioner.menu import display_select_vpc_menu, display_select_subnet_menu, \
+    display_select_aws_profile_menu
+from aws_ec2_provisioner.vpc import get_available_vpcs, get_subnets_for_vpc
 
-from .security_groups import provision_security_groups
-from .load_balancer import provision_and_configure_elb
-from .autoscaling import create_launch_conf_and_asg
+from aws_ec2_provisioner.security_groups import provision_security_groups
+from aws_ec2_provisioner.load_balancer import provision_and_configure_elb
+from aws_ec2_provisioner.autoscaling import create_launch_conf_and_asg
 
 DEFAULT_REGION = 'us-west-1'
 
@@ -15,18 +20,19 @@ sudo amazon-linux-extras install nginx1.12 -y
 sudo chkconfig nginx on
 sudo service nginx start
 """
+pp = pprint.PrettyPrinter(indent=4)
 
 
 @click.command()
-@click.option('--aws-profile', prompt='AWS profile name', default="default",
+@click.option('--aws-profile',
               help='The name of access key/secret key pair (~/.aws/credentials)')
 @click.option('--region', prompt='Region [1] us-west-1 (is the only supported at the moment)',
               default=1,
               help='The region where the system will be deployed.'
                    ' Only us-west-1 is supported at the moment'
               )
-@click.option('--vpc-id', prompt='VPC-id', help='The id of the VPC in which you want to deploy the application')
-@click.option('--subnet-id', prompt='subnet-id', help='The id of the subnet in which you want to deploy'
+@click.option('--vpc-id', help='The id of the VPC in which you want to deploy the application')
+@click.option('--subnet-id', help='The id of the subnet in which you want to deploy'
                                                     ' the application. Only the single subnet architecture '
                                                      'is supported at the moment')
 @click.option('--project-name', prompt='Project name', help='The name of the application')
@@ -37,9 +43,22 @@ sudo service nginx start
 @click.option('--debug-mode', default='n', help='DEBUG mode')
 def main(region, max_asg_size, min_asg_size, instance_type, project_name, subnet_id, vpc_id, aws_profile, debug_mode):
 
-    instance_type = _get_instace_type(instance_type)
+    if not aws_profile:
+        aws_profile = _select_aws_profile()
+
     region = _get_region_name(region)
+    session = _get_boto3_session(region=region, profile=aws_profile)
+
+    instance_type = _get_instace_type(instance_type)
     debug_mode = _get_debug_mode(debug_mode)
+
+    if not vpc_id:
+        vpc_id = _select_vpc(session, region)
+
+    if not subnet_id:
+        subnet_id = _select_subnet(session, vpc_id)
+
+
     configuration = {
        "project_name": project_name,
        "min_size": min_asg_size,
@@ -47,14 +66,14 @@ def main(region, max_asg_size, min_asg_size, instance_type, project_name, subnet
        "image_id": AMAZON_LINUX_AMI_US_WEST_2,
        "user_data": USER_DATA,
        "instance_type": instance_type,
-       "subnets": subnet_id,
-       "vpc_id": vpc_id,
        "aws_profile": aws_profile,
        "region": region,
        "debug_mode": debug_mode,
+       "vpc_id": vpc_id,
+       "subnets": subnet_id,
     }
 
-    session = _get_boto3_session(configuration)
+    pp.pprint(configuration)
 
     sg_provisioning_result = provision_security_groups(configuration, session)
     configuration["security_groups"] = sg_provisioning_result
@@ -93,12 +112,26 @@ def _get_debug_mode(debug_mode):
         return False
 
 
-def _get_boto3_session(configuration):
-    profile_name = configuration["aws_profile"]
-    region_name = configuration["region"]
-    session = boto3.session.Session(profile_name=profile_name, region_name=region_name)
-    return session
+def _select_vpc(session, region):
+    available_vpcs = get_available_vpcs(session)
+    vpc_choice = display_select_vpc_menu(available_vpcs, region=region)
+    return vpc_choice
 
+
+def _get_boto3_session(region, profile):
+    return boto3.session.Session(profile_name=profile, region_name=region)
+
+
+def _select_subnet(session, vpc_id):
+    available_subnets = get_subnets_for_vpc(session, vpc_id)
+    subnet_choice = display_select_subnet_menu(available_subnets, vpc_id)
+    return subnet_choice
+
+
+def _select_aws_profile():
+    available_profiles = boto3.session.Session().available_profiles
+    aws_profile_choice = display_select_aws_profile_menu(available_profiles)
+    return aws_profile_choice
 
 if __name__ == '__main__':
     main()
