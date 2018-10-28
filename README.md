@@ -46,7 +46,7 @@ If you omit any of the options you will be prompted interactively.
         - **no SSH access** because the APP servers are in the public subnet (architecture limitation)
     
 #### TODO:
-- [ ] Load based autoscaling
+- [x] Load based autoscaling
 - [ ] Additional region
 - [x] Choose aws_profile interactively based on ~/.aws/credentials
 - [x] Choose vpc-id interactively after specifying the aws-profile and region
@@ -56,4 +56,4 @@ If you omit any of the options you will be prompted interactively.
 - [ ] Idempotency
 - [ ] Ability to rollback
 - [ ] Move instance user data to separate file, so the `user data` file may be specified at runtime
- 
+- [ ] Add bumpversion 
