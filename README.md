@@ -1,8 +1,16 @@
 
-CLI tool to create a simple web app.
- 
+CLI tool to provision infrastructure and configure a simple web app in AWS.
+
+#### Prerequiistes
+- AWS Account
+- VPC with at least one public subnet
+- At least 9 available private IP addresses in the subnet (allows for 1 EC2 instance to be provisioned)
+- AWS CLI needs to be configured for a user with necessary IAM permissions (TBD)
+
+#### Limitations 
 To simplify the design all the infrastructure are being created in the single
 subnet, and this subnet is required to be a **public** one. Because of the architecture doesn't include a NAT gateway all the provisioned instances **will be assigned a public IP** address, so they can download the necessary packages.
+
 #### Installation
     pip install aws-ec2-provisioner
 or
@@ -59,3 +67,5 @@ If you omit any of the options you will be prompted interactively.
 - [ ] Ability to rollback
 - [ ] Move instance user data to separate file, so the `user data` file may be specified at runtime
 - [ ] Add bumpversion 
+- [ ] Support for multiple subnets. Private/public
+- [ ] Provision a NAT gateway as necessary

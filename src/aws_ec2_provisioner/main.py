@@ -45,11 +45,11 @@ pp = pprint.PrettyPrinter(indent=4)
 @click.option('--min-asg-size', prompt='Min group size', default=1, help='Min group size.')
 @click.option('--max-asg-size', prompt='Max group size', default=1, help='Max group size')
 @click.option('--debug-mode', default='n', help='DEBUG mode')
-@click.option('--scaling-value', help='Scaling policy target value %')
+@click.option('--scaling-target-value', help='Scaling policy target value %')
 def main(
     region, max_asg_size, min_asg_size,
     instance_type, project_name, subnet_id,
-    vpc_id, aws_profile, debug_mode, scaling_value
+    vpc_id, aws_profile, debug_mode, scaling_target_value
 ):
 
     if not aws_profile:
@@ -67,8 +67,8 @@ def main(
     if not subnet_id:
         subnet_id = _select_subnet(session, vpc_id)
 
-    if not scaling_value:
-        scaling_value = SCALING_DEFAULT_TARGET_VALUE_PERCENT
+    if not scaling_target_value:
+        scaling_target_value = SCALING_DEFAULT_TARGET_VALUE_PERCENT
 
     configuration = {
        "project_name": project_name,
@@ -82,7 +82,7 @@ def main(
        "debug_mode": debug_mode,
        "vpc_id": vpc_id,
        "subnets": subnet_id,
-       "scaling_target_value_percent": scaling_value
+       "scaling_target_value_percent": scaling_target_value
     }
 
     sg_provisioning_result = provision_security_groups(configuration, session)
