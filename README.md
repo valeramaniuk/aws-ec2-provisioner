@@ -37,6 +37,7 @@ If you omit any of the options you will be prompted interactively.
     - Instance port **80**
     - Health check **HTTP:80/**
 - Autoscaling group
+    - Scales in/out to maintain Average CPU utilization across all instances in the Autoscaling Group.
     - Launch configuration associates public IP by default
     - User data in Launch configuration installs and starts **ngnix**
 - Security Groups
