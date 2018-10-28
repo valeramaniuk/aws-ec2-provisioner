@@ -19,7 +19,11 @@ USER_DATA = """
 sudo amazon-linux-extras install nginx1.12 -y
 sudo chkconfig nginx on
 sudo service nginx start
+# to generate CPU load on start up for autoscaling debugging
+#cat /dev/zero > /dev/null
 """
+
+SCALING_DEFAULT_TARGET_VALUE_PERCENT = 70
 pp = pprint.PrettyPrinter(indent=4)
 
 
@@ -33,15 +37,20 @@ pp = pprint.PrettyPrinter(indent=4)
               )
 @click.option('--vpc-id', help='The id of the VPC in which you want to deploy the application')
 @click.option('--subnet-id', help='The id of the subnet in which you want to deploy'
-                                                    ' the application. Only the single subnet architecture '
-                                                     'is supported at the moment')
+                                  ' the application. Only the single subnet architecture '
+                                  'is supported at the moment')
 @click.option('--project-name', prompt='Project name', help='The name of the application')
 @click.option('--instance-type', prompt='Instance type [1] t2.micro [2] t2.medium]',
               default=1, help='Type of instances.\n1.t2.micro *default*\n2.t2.medium')
 @click.option('--min-asg-size', prompt='Min group size', default=1, help='Min group size.')
 @click.option('--max-asg-size', prompt='Max group size', default=1, help='Max group size')
 @click.option('--debug-mode', default='n', help='DEBUG mode')
-def main(region, max_asg_size, min_asg_size, instance_type, project_name, subnet_id, vpc_id, aws_profile, debug_mode):
+@click.option('--scaling-value', help='Scaling policy target value %')
+def main(
+    region, max_asg_size, min_asg_size,
+    instance_type, project_name, subnet_id,
+    vpc_id, aws_profile, debug_mode, scaling_value
+):
 
     if not aws_profile:
         aws_profile = _select_aws_profile()
@@ -58,6 +67,8 @@ def main(region, max_asg_size, min_asg_size, instance_type, project_name, subnet
     if not subnet_id:
         subnet_id = _select_subnet(session, vpc_id)
 
+    if not scaling_value:
+        scaling_value = SCALING_DEFAULT_TARGET_VALUE_PERCENT
 
     configuration = {
        "project_name": project_name,
@@ -71,6 +82,7 @@ def main(region, max_asg_size, min_asg_size, instance_type, project_name, subnet
        "debug_mode": debug_mode,
        "vpc_id": vpc_id,
        "subnets": subnet_id,
+       "scaling_target_value_percent": scaling_value
     }
 
     sg_provisioning_result = provision_security_groups(configuration, session)
@@ -81,7 +93,6 @@ def main(region, max_asg_size, min_asg_size, instance_type, project_name, subnet
     configuration["elb_response"] = elb_creation_data["elb_response"]
 
     create_launch_conf_and_asg(configuration, session)
-
 
     dns_name = configuration["elb_response"].get("DNSName", "Failed, sorry!")
     print("\n-------\nApplication will shortly be available at: {address}".format(address=dns_name))
@@ -130,6 +141,7 @@ def _select_aws_profile():
     available_profiles = boto3.session.Session().available_profiles
     aws_profile_choice = display_select_aws_profile_menu(available_profiles)
     return aws_profile_choice
+
 
 if __name__ == '__main__':
     main()

@@ -1,20 +1,45 @@
+import pprint
+
+from aws_ec2_provisioner.errors import RequestToAWSError, LaunchCfgCretationError
+from aws_ec2_provisioner.utils import validate_response_http_code, bcolors
+
 ASSOCIATE_PUBLIC_IP_BY_DEFAULT = True
 
 
 DEFAULT_COOLDOWN_SECONDS = 300
 HEATHCHECK_GRACE_PERIOD_SECONDS = 120
 
+pp = pprint.PrettyPrinter(indent=4)
+
 
 def _get_client(session):
     return session.client('autoscaling')
 
 
-def _get_autoscaling_group_name(project_name):
-    return "asg-{}".format(str(project_name))
+def create_launch_conf_and_asg(configuration, session):
+    client = _get_client(session)
+    try:
+        launch_cfg_name = create_launch_configuration(configuration, client)
+        print("Launch configuration created  {green}OK{end}".format(green=bcolors.OKGREEN, end=bcolors.ENDC))
+    except RequestToAWSError:
+        print("Launch configuration creation  {green}FAILED{end}. Aborting".format(green=bcolors.FAIL, end=bcolors.ENDC))
+        raise LaunchCfgCretationError
 
+    try:
+        asg_name = create_autoscaling_group(configuration, launch_cfg_name, client)
+        message = "Autoscating group created"
+        print("{message: <40}  {green}OK{end}".format(green=bcolors.OKGREEN, end=bcolors.ENDC, message=message))
+    except RequestToAWSError:
+        print("Launch configuration creation  {green}FAILED{end}".format(green=bcolors.FAIL, end=bcolors.ENDC))
+        raise LaunchCfgCretationError
 
-def _get_launch_configuration_name(project_name):
-    return "lcfg-{}".format(str(project_name))
+    try:
+        message = "Scaling policy created"
+        create_scaling_policy(configuration, asg_name, client)
+        print("{message: <40}  {green}OK{end}".format(green=bcolors.OKGREEN, end=bcolors.ENDC, message=message))
+    except RequestToAWSError:
+        print("Launch configuration creation  {green}FAILED{end}".format(green=bcolors.FAIL, end=bcolors.ENDC))
+        raise LaunchCfgCretationError
 
 
 def create_autoscaling_group(configuration, launch_cfg_name, client):
@@ -48,7 +73,9 @@ def create_autoscaling_group(configuration, launch_cfg_name, client):
             },
         ],
     )
-    return response
+    validate_response_http_code(response)
+
+    return name
 
 
 def create_launch_configuration(configuration, client):
@@ -71,16 +98,39 @@ def create_launch_configuration(configuration, client):
         PlacementTenancy='default',
         AssociatePublicIpAddress=associate_public_address,
     )
+    validate_response_http_code(response)
+
     return name
 
 
-def create_launch_conf_and_asg(configuration, session):
-    client = _get_client(session)
-    try:
-        launch_cfg_name = create_launch_configuration(configuration, client)
-        print("Launch configuration created OK")
-        create_autoscaling_group(configuration, launch_cfg_name, client)
-        print("ASG created OK")
-    except Exception as e:
-        print(str(e))
+def create_scaling_policy(configuration, asg_name, client):
+    project_name = configuration.get("project_name")
+    scaling_target_value_percent = configuration.get("scaling_target_value_percent")
+    name = _get_scaling_policy_name(project_name)
+    response = client.put_scaling_policy(
+        AutoScalingGroupName=asg_name,
+        PolicyName=name,
+        PolicyType='TargetTrackingScaling',
+        TargetTrackingConfiguration={
+            'PredefinedMetricSpecification': {
+                'PredefinedMetricType': 'ASGAverageCPUUtilization',
+            },
+            'TargetValue': scaling_target_value_percent,
+            'DisableScaleIn': False
+        }
+    )
+    validate_response_http_code(response)
 
+    return name
+
+
+def _get_autoscaling_group_name(project_name):
+    return "asg-{}".format(str(project_name))
+
+
+def _get_launch_configuration_name(project_name):
+    return "lcfg-{}".format(str(project_name))
+
+
+def _get_scaling_policy_name(project_name):
+    return "scaling_policy-{}".format(str(project_name))

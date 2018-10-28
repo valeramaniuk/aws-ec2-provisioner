@@ -1,7 +1,6 @@
 import pprint
 
-import boto3
-from aws_ec2_provisioner.errors import RequestToAWSError
+from aws_ec2_provisioner.utils import validate_response_http_code
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -26,7 +25,7 @@ def get_available_vpcs(session):
         VpcIds=vpc_ids
     )
 
-    _validate_response_http_code(response)
+    validate_response_http_code(response)
     vpcs = response.get("Vpcs", [])
     return [_get_vpc_data(vpc) for vpc in vpcs]
 
@@ -35,13 +34,12 @@ def get_subnets_for_vpc(session, vpc_id):
     client = _get_client(session)
     resource = _get_resource(session)
 
-
     subnets_collection = resource.subnets.all()
     subnet_ids = [x.id for x in subnets_collection]
     response = client.describe_subnets(
         SubnetIds=subnet_ids
     )
-    _validate_response_http_code(response)
+    validate_response_http_code(response)
 
     all_subnets = response["Subnets"]
     subnets_in_the_vpc = [x for x in all_subnets if x["VpcId"] == vpc_id]
@@ -69,7 +67,7 @@ def _get_subnet_data(subnet):
 
 
 def _is_default(vpc):
-    return True if vpc.get("IsDefault") == True else False
+    return True if vpc.get("IsDefault") is True else False
 
 
 def _get_name_tag(vpc):
@@ -93,18 +91,3 @@ def _get_ips_available_in_subnet(subnet):
 
 def _get_subnet_az(subnet):
     return subnet["AvailabilityZone"]
-
-def _validate_response_http_code(response):
-    status_code = response.get('ResponseMetadata', {}).get('HTTPStatusCode')
-    if status_code != 200:
-        raise RequestToAWSError
-
-
-
-# -------------------_-------_--__---------__---__-----_-_---_--_-----_-_-_-_------_---_--_
-def _get_boto3_session(region, profile):
-    return boto3.session.Session(profile_name=profile, region_name=region)
-
-vpc_id ='vpc-09966440e874f08ae'
-sesion = _get_boto3_session("us-west-1", "valera")
-get_subnets_for_vpc(sesion, vpc_id)

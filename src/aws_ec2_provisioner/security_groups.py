@@ -16,7 +16,12 @@ def provision_security_groups(configuration, session):
 
     elb_sg_data = _create_elb_security_group(project_name, vpc_id, client)
     print("ELB SG OK")
-    app_sg_data = _create_application_security_group(project_name, vpc_id, client, source_sg=elb_sg_data["name"])
+    app_sg_data = _create_application_security_group(
+        project_name,
+        vpc_id,
+        client,
+        source_sg=elb_sg_data["name"]
+    )
     print("Application SG created OK")
     return {"ELB": elb_sg_data, "APP": app_sg_data}
 
