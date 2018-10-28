@@ -22,6 +22,7 @@ run `aws_ec2_provisioner` with the following options:
     --min-asg-size <Minimum size of the autoscaling group>
     --max-asg-size <Maximum size of the autoscaling group>
     --instance-type <INT. Choose from a predefined list>
+    --scaling-value <INT. Scaling policy target value % >
 
 If you omit any of the options you will be prompted interactively.
 
