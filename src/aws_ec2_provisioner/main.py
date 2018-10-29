@@ -1,29 +1,19 @@
 import pprint
-
 import click
 import boto3
+
+from aws_ec2_provisioner.conf import SCALING_DEFAULT_TARGET_VALUE_PERCENT, \
+    AMAZON_LINUX_AMI_US_WEST_2, USER_DATA, DEFAULT_REGION
 from aws_ec2_provisioner.menu import display_select_vpc_menu, display_select_subnet_menu, \
     display_select_aws_profile_menu
+from aws_ec2_provisioner.utils import bcolors
 from aws_ec2_provisioner.vpc import get_available_vpcs, get_subnets_for_vpc
 
 from aws_ec2_provisioner.security_groups import provision_security_groups
 from aws_ec2_provisioner.load_balancer import provision_and_configure_elb
 from aws_ec2_provisioner.autoscaling import create_launch_conf_and_asg
 
-DEFAULT_REGION = 'us-west-1'
 
-AMAZON_LINUX_AMI_US_WEST_2 = "ami-04534c96466647bfb"
-# installs and starts ngnix, nothing else
-USER_DATA = """
-#!/bin/bash
-sudo amazon-linux-extras install nginx1.12 -y
-sudo chkconfig nginx on
-sudo service nginx start
-# to generate CPU load on start up for autoscaling debugging
-#cat /dev/zero > /dev/null
-"""
-
-SCALING_DEFAULT_TARGET_VALUE_PERCENT = 70
 pp = pprint.PrettyPrinter(indent=4)
 
 
@@ -90,12 +80,19 @@ def main(
 
     elb_creation_data = provision_and_configure_elb(configuration, session)
     configuration["elb_name"] = elb_creation_data["elb_name"]
-    configuration["elb_response"] = elb_creation_data["elb_response"]
+    dns_name = elb_creation_data["elb_dns"]
 
     create_launch_conf_and_asg(configuration, session)
 
-    dns_name = configuration["elb_response"].get("DNSName", "Failed, sorry!")
-    print("\n-------\nApplication will shortly be available at: {address}".format(address=dns_name))
+    _report_final_status(dns_name)
+
+
+def _report_final_status(dns_name):
+    bcolors.message("Application will shortly be available at")
+    if dns_name:
+        bcolors.green(dns_name)
+    else:
+        bcolors.fail()
 
 
 def _get_instace_type(user_choice):
