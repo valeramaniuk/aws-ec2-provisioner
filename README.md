@@ -12,7 +12,7 @@ pre-existing components based on the name. However, if there are several  compon
 - AWS CLI needs to be configured for a user with necessary IAM permissions (TBD)
 
 #### Limitations 
-To simplify the design all the infrastructure are being created in the single
+To simplify the design all the infrastructure is being created in the single
 subnet, and this subnet is required to be a **public** one. Because the architecture doesn't include a NAT gateway 
 all the provisioned instances **will be assigned a public IP** address, so they can download the necessary packages.
 
@@ -20,7 +20,7 @@ There is **no input validation**
 
 
 #### Installation
-    pip install aws-ec2-provisioner
+    pip install -U aws-ec2-provisioner
 or
 
     git clone git@github.com:valeramaniuk/aws-ec2-provisioner.git
