@@ -41,7 +41,7 @@ def display_select_vpc_menu(available_vpcs, region):
                                             choice="option#",
                                             name="name",
                                             id="vpc-id",
-                                            default="default",
+                                            default="default VPC",
                                             fill=str(FILL),
                                             extended_fill=str(EXTENDED_FILL)
                                        )
@@ -68,7 +68,7 @@ def display_select_aws_profile_menu(available_profiles):
     print("\nAvailabe AWS profiles (~/.aws/credentials):")
     print(HORIZONTAL_DIVIDER)
     for i, profile in enumerate(available_profiles):
-        print("{option}.{profile: <{extended_fill}} ".format(
+        print("{option}. {profile: <{extended_fill}} ".format(
             option=i,
             profile=profile,
             extended_fill=str(EXTENDED_FILL)

@@ -1,3 +1,8 @@
+from botocore.exceptions import ClientError
+
+from aws_ec2_provisioner.utils import bcolors
+
+
 def _get_client(session):
     return session.client('elb')
 
@@ -8,20 +13,31 @@ def _get_elb_name(project_name):
 
 def provision_and_configure_elb(configuration, session):
     client = _get_client(session)
-    elb_response = None
     project_name = configuration.get("project_name")
     elb_name = _get_elb_name(project_name)
+    dns_name = None
+
+    bcolors.message("Creating Elastic Load Balancer({name})".format(name=elb_name))
     try:
         elb_response = _create_elb(configuration, elb_name, client)
-    except Exception as e:
-        print(str(e))
+        dns_name = elb_response.get('DNSName')
+        bcolors.ok()
+    except ClientError as e:
+        if _is_duplicate_elb_exception(e):
+            bcolors.exists()
+            dns_name = _get_elb_dns_by_name(elb_name, client)
+        else:
+            bcolors.fail()
 
+    bcolors.message("Configuring Health Checks for ELB({name})".format(name=elb_name))
     try:
         _configure_health_check(elb_name, client)
-    except Exception as e:
-        print(str(e))
+        bcolors.ok()
+    except ClientError as e:
+        bcolors.fail()
+        raise e
 
-    return {"elb_name": elb_name, "elb_response": elb_response}
+    return {"elb_name": elb_name, "elb_dns": dns_name}
 
 
 def _create_elb(configuration, elb_name, client):
@@ -49,7 +65,6 @@ def _create_elb(configuration, elb_name, client):
             },
         ]
     )
-    print("ELB Created OK")
     return response or {}
 
 
@@ -65,5 +80,20 @@ def _configure_health_check(elb_name, client):
             'HealthyThreshold': 2
         }
     )
-    print("HealthCheck Created OK")
     return response
+
+
+def _is_duplicate_elb_exception(exception):
+    if '(DuplicateLoadBalancerName)' in exception.args[0]:
+        return True
+    else:
+        return False
+
+
+def _get_elb_dns_by_name(elb_name, client):
+    response = client.describe_load_balancers(
+        LoadBalancerNames=[elb_name]
+    )
+    elbs = response.get('LoadBalancerDescriptions', [dict()])
+    dns_name = elbs[0].get('DNSName')
+    return dns_name
