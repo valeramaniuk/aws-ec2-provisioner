@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='aws_ec2_provisioner',
-    version='0.1.0',
+    version='0.1.1',
     author="Valera Maniuk",
     author_email='valeramaniuk@protonmail.com',
     description="POC boto3 resource provisioner",
